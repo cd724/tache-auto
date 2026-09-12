@@ -2,17 +2,18 @@ import asyncio
 from playwright.async_api import async_playwright
 
 # =====================================================================
-# CONFIGURATION : CHANGEZ CES DEUX LIGNES AVEC VOS INFOS
+# CONFIGURATION : RECOPIEZ BIEN VOS DEUX LIGNES ICI
 # =====================================================================
-URL_DU_SITE = "https://zefame.com/free-tiktok-likes"
-LIEN_A_COLLER = "https://vm.tiktok.com/ZN8jMk7oe/"
+URL_DU_SITE = "https://zefame.com/en/free-tiktok-likes"
+LIEN_A_COLLER = "https://vm.tiktok.com/ZN8jSSMu2/"
 # =====================================================================
 
 async def soumettre_tache():
     async with async_playwright() as p:
-        # Sur le serveur, le navigateur doit obligatoirement être invisible (headless=True)
+        # Configuration en français pour le navigateur
         browser = await p.chromium.launch(headless=True)
-        page = await browser.new_page()
+        context = await browser.new_context(locale="fr-FR", timezone_id="Europe/Paris")
+        page = await context.new_page()
         
         try:
             print(f"Connexion à : {URL_DU_SITE}...")
@@ -23,11 +24,12 @@ async def soumettre_tache():
             champ_texte = page.locator("input[type='text'], input[type='url'], textarea").first
             await champ_texte.fill(LIEN_A_COLLER)
             
-            print("Clic sur le bouton 'Obtenir'...")
-            bouton = page.locator("button:has-text('Obtenir'), input[value='Obtenir']").first
+            # Recherche uniquement le bouton "Get now"
+            print("Clic sur le bouton Get now...")
+            bouton = page.locator("button:has-text('Get now'), input[value='Get now']").first
             await bouton.click()
             
-            print("Tâche exécutée avec succès sur le serveur !")
+            print("Tâche exécutée avec succès !")
             await page.wait_for_timeout(5000)
             
         except Exception as e:
