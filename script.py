@@ -2,15 +2,14 @@ import asyncio
 from playwright.async_api import async_playwright
 
 # =====================================================================
-# CONFIGURATION : RECOPIEZ BIEN VOS DEUX LIGNES ICI
+# CONFIGURATION : REMETTEZ VOS DEUX LIGNES ICI
 # =====================================================================
 URL_DU_SITE = "https://zefame.com/en/free-tiktok-likes"
-LIEN_A_COLLER = "https://vm.tiktok.com/ZN8jSSMu2/"
+LIEN_A_COLLER = "https://vm.tiktok.com/ZN8jSd3bf/"
 # =====================================================================
 
 async def soumettre_tache():
     async with async_playwright() as p:
-        # Configuration en français pour le navigateur
         browser = await p.chromium.launch(headless=True)
         context = await browser.new_context(locale="fr-FR", timezone_id="Europe/Paris")
         page = await context.new_page()
@@ -24,12 +23,16 @@ async def soumettre_tache():
             champ_texte = page.locator("input[type='text'], input[type='url'], textarea").first
             await champ_texte.fill(LIEN_A_COLLER)
             
-            # Recherche uniquement le bouton "Get now"
-            print("Clic sur le bouton Get now...")
-            bouton = page.locator("button:has-text('Get now'), input[value='Get now']").first
-            await bouton.click()
+            # SOLUTION RAPIDE : Simule l'appui sur la touche Entrée du clavier
+            print("Validation par la touche Entrée...")
+            await champ_texte.press("Enter")
             
-            print("Tâche exécutée avec succès !")
+            # Solution de secours : Clic sur le bouton si Entrée n'a pas suffi
+            print("Clic de sécurité sur le bouton...")
+            bouton = page.locator("button:has-text('Get now'), input[value='Get now']").first
+            await bouton.click(force=True)
+            
+            print("Tâche exécutée !")
             await page.wait_for_timeout(5000)
             
         except Exception as e:
