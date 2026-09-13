@@ -5,7 +5,7 @@ from playwright.async_api import async_playwright
 # CONFIGURATION : REMETTEZ VOS DEUX LIGNES ICI
 # =====================================================================
 URL_DU_SITE = "https://zefame.com/en/free-tiktok-likes"
-LIEN_A_COLLER = "https://vm.tiktok.com/ZN8jAGdMq/"
+LIEN_A_COLLER = "https://vm.tiktok.com/ZN8jADpqW/"
 # =====================================================================
 
 async def soumettre_tache():
@@ -17,20 +17,27 @@ async def soumettre_tache():
         try:
             print(f"Connexion à : {URL_DU_SITE}...")
             await page.goto(URL_DU_SITE)
+            # Attend que le réseau soit calme
             await page.wait_for_load_state("networkidle")
+            # Petite pause de sécurité pour le chargement des éléments visuels
+            await page.wait_for_timeout(3000)
             
-            # 1. Trouve la case "Paste your link" et colle le lien
-            print("Ciblage de la case 'Paste your link'...")
-            champ = page.locator("input[placeholder*='Paste your link'], input[placeholder*='link']").first
+            # 1. Trouve la case en ignorant la faute de frappe (cherche juste "Paste your")
+            print("Ciblage de la case TikTok...")
+            champ = page.locator("input[placeholder*='Paste your'], input[placeholder*='TikTok']").first
             await champ.click()
             await champ.fill(LIEN_A_COLLER)
             
-            # 2. Clic STRICT sur le bouton "Get now" (grâce à exact=True)
-            print("Clic précis sur le bouton exact 'Get now'...")
-            bouton = page.get_by_text("Get now", exact=True).first
-            await bouton.click()
+            # 2. Clic sur le bouton exact "Get Now" (insensible aux majuscules/minuscules)
+            print("Clic sur le bouton 'Get Now'...")
+            bouton = page.get_by_role("button", name=r"get now", exact=False).first
+            if not await bouton.count():
+                bouton = page.locator("text=/Get Now/i").first
+                
+            await bouton.click(force=True)
             
             print("Tâche exécutée avec succès !")
+            # Laisse le temps au site de traiter la demande
             await page.wait_for_timeout(5000)
             
         except Exception as e:
