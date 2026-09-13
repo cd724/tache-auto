@@ -4,7 +4,7 @@ from playwright.async_api import async_playwright
 # =====================================================================
 # CONFIGURATION : METTEZ VOS DEUX LIGNES ICI
 # =====================================================================
-URL_DU_SITE = "https://leofame.com/free-tiktok-likes"
+URL_DU_SITE = "https://zefame.com/en/free-tiktok-likes"
 LIEN_A_COLLER = "https://vm.tiktok.com/ZN8jAEjsT/"
 # =====================================================================
 
@@ -20,7 +20,7 @@ async def soumettre_tache():
             await page.goto(URL_DU_SITE)
             await page.wait_for_load_state("networkidle")
             
-            # 1. Trouve la case qui commence par "Paste your"
+            # 1. Trouve la case qui commence par "Paste your TikTok link"
             print("Recherche de la case de saisie...")
             champ = page.locator("input[placeholder^='Paste your'], textarea[placeholder^='Paste your']").first
             await champ.click()
