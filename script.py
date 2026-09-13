@@ -5,7 +5,7 @@ from playwright.async_api import async_playwright
 # CONFIGURATION : REMETTEZ VOS DEUX LIGNES ICI
 # =====================================================================
 URL_DU_SITE = "https://zefame.com/en/free-tiktok-likes"
-LIEN_A_COLLER = "https://vm.tiktok.com/ZN8jAqfpW/"
+LIEN_A_COLLER = "https://vm.tiktok.com/ZN8jA4qaY/"
 # =====================================================================
 
 async def soumettre_tache():
@@ -19,28 +19,22 @@ async def soumettre_tache():
             await page.goto(URL_DU_SITE)
             await page.wait_for_load_state("networkidle")
             
-            # METHODE FORCEE : Injecte directement le lien dans la case par le code du site
-            print("Injection directe du lien...")
-            await page.evaluate(f"""
-                let champ = document.querySelector("input[type='text'], input[type='url'], textarea");
-                if (champ) {{
-                    champ.value = "{LIEN_A_COLLER}";
-                    champ.dispatchEvent(new Event('input', {{ bubbles: true }}));
-                }}
-            """)
+            # 1. Trouve la case "Paste your link" et colle le lien
+            print("Ciblage de la case 'Paste your link'...")
+            champ = page.locator("input[placeholder*='Paste your link'], input[placeholder*='link']").first
+            await champ.click()
+            await champ.fill(LIEN_A_COLLER)
             
-            # METHODE FORCEE : Recherche et clique sur le bouton de manière absolue
-            print("Validation forcée de la tâche...")
-            await page.evaluate("""
-                let bouton = document.querySelector("button:has-text('Get now'), button, input[type='submit']");
-                if (bouton) bouton.click();
-            """)
+            # 2. Clic STRICT sur le bouton "Get now" (grâce à exact=True)
+            print("Clic précis sur le bouton exact 'Get now'...")
+            bouton = page.get_by_text("Get now", exact=True).first
+            await bouton.click()
             
-            print("Tâche envoyée au site !")
+            print("Tâche exécutée avec succès !")
             await page.wait_for_timeout(5000)
             
         except Exception as e:
-            print(f"Erreur rencontrée : {e}")
+            print(f"Erreur : {e}")
         finally:
             await browser.close()
 
