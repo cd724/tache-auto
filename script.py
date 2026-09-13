@@ -4,7 +4,7 @@ from playwright.async_api import async_playwright
 # =====================================================================
 # CONFIGURATION : REMETTEZ VOS DEUX LIGNES ICI
 # =====================================================================
-URL_DU_SITE = "https://zefame.com/en/free-tiktok-saves"
+URL_DU_SITE = "https://zefame.com/fr/free-tiktok-likes"
 LIEN_A_COLLER = "https://vm.tiktok.com/ZN8jfjrSm/"
 # =====================================================================
 
