@@ -2,56 +2,69 @@ import asyncio
 from playwright.async_api import async_playwright
 
 # =====================================================================
-# CONFIGURATION : VOS DEUX LIGNES ICI
+# CONFIGURATION : REMETTEZ VOS DEUX LIGNES ICI
 # =====================================================================
 URL_DU_SITE = "https://zefame.com/en/free-tiktok-likes"
-LIEN_A_COLLER = "https://vm.tiktok.com/ZN8jff3B6/"
+LIEN_A_COLLER = "https://vm.tiktok.com/ZN8jfjrSm/"
 # =====================================================================
 
 async def soumettre_tache():
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
+        # Ajout d'arguments réseau avancés pour masquer le centre de données (Datacenter)
+        browser = await p.chromium.launch(
+            headless=True,
+            args=[
+                "--disable-blink-features=AutomationControlled", # Cache le fait que c'est un robot
+                "--use-fake-device-for-media-stream",
+                "--disable-web-security"
+            ]
+        )
+        
+        # Utilisation d'un profil de navigateur mobile standard (Pixel 5)
         mobile_device = p.devices['Pixel 5']
         context = await browser.new_context(
             **mobile_device,
             locale="en-US",
-            timezone_id="Europe/Paris"
+            timezone_id="Europe/Paris",
+            # On simule des entêtes de requêtes réseau totalement humaines
+            extra_http_headers={
+                "Accept-Language": "en-US,en;q=0.9",
+                "Upgrade-Insecure-Requests": "1",
+                "User-Agent": mobile_device['user_agent']
+            }
         )
         page = await context.new_page()
         
         try:
-            print(f"Connexion au site : {URL_DU_SITE}")
+            print(f"Connexion masquée au site : {URL_DU_SITE}")
             await page.goto(URL_DU_SITE)
             await page.wait_for_load_state("networkidle")
             await page.wait_for_timeout(5000)
             
-            # --- FORCE UNLOCK (DÉVERROUILLAGE FORCE DE LA PAGE) ---
-            print("Suppression des verrous et blocages sur la page...")
-            await page.evaluate("""
-                // Ce code cherche partout les attributs 'disabled' ou verrouillés et les détruit
-                document.querySelectorAll("input, button").forEach(el => {
-                    el.removeAttribute("disabled");
-                    el.removeAttribute("readonly");
-                    el.style.pointerEvents = "auto";
-                    el.style.opacity = "1";
-                });
-            """)
-            
-            # 1. Insertion du lien
+            # Recherche de la case de saisie
             print("Recherche de la case...")
-            champ = page.locator("input[placeholder*='Paste your'], input[type='text']").first
-            await champ.click()
-            await champ.fill(LIEN_A_COLLER)
-            await page.wait_for_timeout(2000)
+            champ = page.locator("input[placeholder*='Paste your'], input[type='text'], input[type='url']").first
             
-            # 2. Clic forcé sur le bouton
-            print("Recherche et clic forcé sur 'Get Now'...")
+            if await champ.count() > 0:
+                print("Case trouvée ! Saisie du lien...")
+                await champ.click()
+                await champ.fill(LIEN_A_COLLER)
+                await page.wait_for_timeout(2000)
+            else:
+                print("ATTENTION : La case n'a pas été trouvée.")
+                
+            # Recherche et clic sur le bouton "Get Now"
+            print("Recherche du bouton 'Get Now'...")
             bouton = page.locator("button:has-text('Get Now'), input[value='Get Now']").first
             
-            # On force le clic par le code pour ignorer l'état "locked" visuel
-            await bouton.evaluate("node => node.click()")
-            print("Clic forcé envoyé au serveur !")
-            
+            if await bouton.count() > 0:
+                print("Bouton trouvé ! Envoi de l'action...")
+                await bouton.focus()
+                await bouton.click(force=True)
+                print("Clic effectué avec succès !")
+            else:
+                print("ATTENTION : Le bouton 'Get Now' n'a pas été trouvé.")
+                
             await page.wait_for_timeout(8000)
             
         except Exception as e:
