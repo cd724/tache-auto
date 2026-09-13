@@ -2,16 +2,15 @@ import asyncio
 from playwright.async_api import async_playwright
 
 # =====================================================================
-# CONFIGURATION : REMETTEZ VOS DEUX LIGNES ICI
+# CONFIGURATION : REMETTEZ SOS DEUX LIGNES EXACTES ICI
 # =====================================================================
 URL_DU_SITE = "https://zefame.com/en/free-tiktok-likes"
-LIEN_A_COLLER = "https://vm.tiktok.com/ZN8jyt2QS/"
+LIEN_A_COLLER = "https://vm.tiktok.com/ZN8jf6sNM/"
 # =====================================================================
 
 async def soumettre_tache():
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
-        # Utilisation du profil universel "Pixel 5" pour éviter la KeyError
         mobile_device = p.devices['Pixel 5']
         context = await browser.new_context(
             **mobile_device,
@@ -21,19 +20,29 @@ async def soumettre_tache():
         page = await context.new_page()
         
         try:
-            print(f"Connexion au site en mode masqué : {URL_DU_SITE}")
+            print(f"Connexion au site : {URL_DU_SITE}")
             await page.goto(URL_DU_SITE)
             await page.wait_for_load_state("networkidle")
-            await page.wait_for_timeout(4000)
+            # Attente pour s'assurer que tous les éléments du site sont stables
+            await page.wait_for_timeout(5000)
             
             # Recherche de la case de saisie
-            print("Recherche de la case de saisie...")
+            print("Recherche de la case...")
             champ = page.locator("input[placeholder*='Paste your'], input[type='text'], input[type='url']").first
             
             if await champ.count() > 0:
-                print("Case trouvée ! Remplissage du lien...")
+                print("Case trouvée ! Nettoyage et focus...")
                 await champ.click()
-                await champ.fill(LIEN_A_COLLER)
+                await champ.focus()
+                
+                # Tape le lien lentement (150 millisecondes de pause entre chaque lettre)
+                # Cela empêche le site d'abréger ou de bloquer le lien
+                print(f"Écriture humaine du lien complet...")
+                await champ.type(LIEN_A_COLLER, delay=150)
+                await page.wait_for_timeout(2000)
+                
+                # Option de sécurité : simule un appui sur Entrée
+                await champ.press("Enter")
                 await page.wait_for_timeout(1000)
             else:
                 print("ATTENTION : La case n'a pas été trouvée.")
@@ -43,13 +52,15 @@ async def soumettre_tache():
             bouton = page.locator("button:has-text('Get Now'), input[value='Get Now']").first
             
             if await bouton.count() > 0:
-                print("Bouton trouvé ! Validation de la tâche...")
+                print("Bouton trouvé ! Clic forcé...")
+                await bouton.focus()
                 await bouton.click(force=True)
                 print("Clic effectué avec succès !")
             else:
                 print("ATTENTION : Le bouton 'Get Now' n'a pas été trouvé.")
                 
-            await page.wait_for_timeout(5000)
+            # Laisse 8 secondes au site pour traiter la validation après le clic
+            await page.wait_for_timeout(8000)
             
         except Exception as e:
             print(f"Erreur durant l'exécution : {e}")
