@@ -2,10 +2,10 @@ import asyncio
 from playwright.async_api import async_playwright
 
 # =====================================================================
-# CONFIGURATION : REMETTEZ SOS DEUX LIGNES EXACTES ICI
+# CONFIGURATION : VOS DEUX LIGNES ICI
 # =====================================================================
 URL_DU_SITE = "https://zefame.com/en/free-tiktok-likes"
-LIEN_A_COLLER = "https://vm.tiktok.com/ZN8jf6sNM/"
+LIEN_A_COLLER = "https://vm.tiktok.com/ZN8jff3B6/"
 # =====================================================================
 
 async def soumettre_tache():
@@ -23,43 +23,35 @@ async def soumettre_tache():
             print(f"Connexion au site : {URL_DU_SITE}")
             await page.goto(URL_DU_SITE)
             await page.wait_for_load_state("networkidle")
-            # Attente pour s'assurer que tous les éléments du site sont stables
             await page.wait_for_timeout(5000)
             
-            # Recherche de la case de saisie
-            print("Recherche de la case...")
-            champ = page.locator("input[placeholder*='Paste your'], input[type='text'], input[type='url']").first
+            # --- FORCE UNLOCK (DÉVERROUILLAGE FORCE DE LA PAGE) ---
+            print("Suppression des verrous et blocages sur la page...")
+            await page.evaluate("""
+                // Ce code cherche partout les attributs 'disabled' ou verrouillés et les détruit
+                document.querySelectorAll("input, button").forEach(el => {
+                    el.removeAttribute("disabled");
+                    el.removeAttribute("readonly");
+                    el.style.pointerEvents = "auto";
+                    el.style.opacity = "1";
+                });
+            """)
             
-            if await champ.count() > 0:
-                print("Case trouvée ! Nettoyage et focus...")
-                await champ.click()
-                await champ.focus()
-                
-                # Tape le lien lentement (150 millisecondes de pause entre chaque lettre)
-                # Cela empêche le site d'abréger ou de bloquer le lien
-                print(f"Écriture humaine du lien complet...")
-                await champ.type(LIEN_A_COLLER, delay=150)
-                await page.wait_for_timeout(2000)
-                
-                # Option de sécurité : simule un appui sur Entrée
-                await champ.press("Enter")
-                await page.wait_for_timeout(1000)
-            else:
-                print("ATTENTION : La case n'a pas été trouvée.")
-                
-            # Recherche et clic sur le bouton "Get Now"
-            print("Recherche du bouton 'Get Now'...")
+            # 1. Insertion du lien
+            print("Recherche de la case...")
+            champ = page.locator("input[placeholder*='Paste your'], input[type='text']").first
+            await champ.click()
+            await champ.fill(LIEN_A_COLLER)
+            await page.wait_for_timeout(2000)
+            
+            # 2. Clic forcé sur le bouton
+            print("Recherche et clic forcé sur 'Get Now'...")
             bouton = page.locator("button:has-text('Get Now'), input[value='Get Now']").first
             
-            if await bouton.count() > 0:
-                print("Bouton trouvé ! Clic forcé...")
-                await bouton.focus()
-                await bouton.click(force=True)
-                print("Clic effectué avec succès !")
-            else:
-                print("ATTENTION : Le bouton 'Get Now' n'a pas été trouvé.")
-                
-            # Laisse 8 secondes au site pour traiter la validation après le clic
+            # On force le clic par le code pour ignorer l'état "locked" visuel
+            await bouton.evaluate("node => node.click()")
+            print("Clic forcé envoyé au serveur !")
+            
             await page.wait_for_timeout(8000)
             
         except Exception as e:
