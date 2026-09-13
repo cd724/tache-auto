@@ -5,7 +5,7 @@ from playwright.async_api import async_playwright
 # CONFIGURATION : METTEZ VOS DEUX LIGNES ICI
 # =====================================================================
 URL_DU_SITE = "https://zefame.com/en/free-tiktok-likes"
-LIEN_A_COLLER = "https://vm.tiktok.com/ZN8jAEjsT/"
+LIEN_A_COLLER = "https://vm.tiktok.com/ZN8jD9PBJ/"
 # =====================================================================
 
 async def soumettre_tache():
