@@ -53,9 +53,9 @@ async def soumettre_tache():
             else:
                 print("ATTENTION : La case n'a pas été trouvée.")
                 
-            # Recherche et clic sur le bouton "Get Now"
-            print("Recherche du bouton 'Get Now'...")
-            bouton = page.locator("button:has-text('Get Now'), input[value='Get Now']").first
+            # Recherche et clic sur le bouton "Get free Likes"
+            print("Recherche du bouton 'Get free Likes'...")
+            bouton = page.locator("button:has-text('Get free Likes'), input[value='Get free Likes']").first
             
             if await bouton.count() > 0:
                 print("Bouton trouvé ! Envoi de l'action...")
@@ -63,7 +63,7 @@ async def soumettre_tache():
                 await bouton.click(force=True)
                 print("Clic effectué avec succès !")
             else:
-                print("ATTENTION : Le bouton 'Get Now' n'a pas été trouvé.")
+                print("ATTENTION : Le bouton 'Get free Likes' n'a pas été trouvé.")
                 
             await page.wait_for_timeout(8000)
             
