@@ -2,15 +2,14 @@ name: Execution Automatique Toutes les 32 Minutes
 
 on:
   schedule:
-    # Ce code dit au serveur GitHub de se lancer toutes les 32 minutes
     - cron: '*/32 * * * *'
-  workflow_dispatch: # Permet aussi de lancer le script à la main si besoin
+  workflow_dispatch:
 
 jobs:
   run-script:
     runs-on: ubuntu-latest
     steps:
-      - name: Récupérer le code
+      - name: Recuprer le code
         uses: actions/checkout@v4
 
       - name: Installer Python
@@ -23,5 +22,11 @@ jobs:
           pip install playwright
           playwright install chromium
 
-      - name: Lancer la tâche automatisée
+      - name: Lancer la tache automatisee
         run: python script.py
+
+      - name: Sauvegarder la capture d ecran de controle
+        uses: actions/upload-artifact@v4
+        with:
+          name: preuve-visuelle
+          path: resultat.png
