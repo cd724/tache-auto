@@ -5,12 +5,11 @@ from playwright.async_api import async_playwright
 # CONFIGURATION : REMETTEZ VOS DEUX LIGNES ICI
 # =====================================================================
 URL_DU_SITE = "https://zefame.com/en/free-tiktok-likes"
-LIEN_A_COLLER = "https://vm.tiktok.com/ZN8jDW3HB/"
+LIEN_A_COLLER = "https://vm.tiktok.com/ZN8jUPnMe/"
 # =====================================================================
 
 async def soumettre_tache():
     async with async_playwright() as p:
-        # On force la langue anglaise pour correspondre à l'affichage "Get Now"
         browser = await p.chromium.launch(headless=True)
         context = await browser.new_context(locale="en-US")
         page = await context.new_page()
@@ -20,18 +19,27 @@ async def soumettre_tache():
             await page.goto(URL_DU_SITE)
             await page.wait_for_load_state("networkidle")
             
-            # 1. Sélection de la case qui commence par "Paste your"
-            print("Insertion du lien dans le formulaire...")
+            # Vérification de la présence de la case
             champ = page.locator("input[placeholder^='Paste your'], textarea[placeholder^='Paste your']").first
-            await champ.click()
-            await champ.fill(LIEN_A_COLLER)
+            if await champ.count() > 0:
+                print("Case 'Paste your link' trouvée. Insertion du lien...")
+                await champ.click()
+                await champ.fill(LIEN_A_COLLER)
+            else:
+                print("ATTENTION : La case de saisie n'a pas été trouvée sur la page.")
             
-            # 2. Clic strict sur le bouton d'action "Get Now"
-            print("Validation par clic sur 'Get Now'...")
+            # Vérification de la présence du bouton
             bouton = page.get_by_text("Get Now", exact=True).first
-            await bouton.click()
+            if await bouton.count() > 0:
+                print("Bouton 'Get Now' trouvé. Clic en cours...")
+                await bouton.click()
+                print("Clic effectué avec succès !")
+            else:
+                print("ATTENTION : Le bouton 'Get Now' n'a pas été trouvé.")
             
-            print("Action envoyée avec succès !")
+            # Enregistre une image témoin pour voir ce que le robot voit
+            await page.screenshot(path="resultat.png")
+            print("Capture d'écran de contrôle enregistrée sous le nom 'resultat.png'.")
             await page.wait_for_timeout(4000)
             
         except Exception as e:
